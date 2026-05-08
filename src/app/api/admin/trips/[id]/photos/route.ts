@@ -35,6 +35,19 @@ export async function POST(request: Request, { params }: Props) {
       throw new PublicApiError("Trip not found");
     }
 
+    const { data: lastPhoto, error: lastPhotoError } = await supabase
+      .from("photos")
+      .select("sort_order")
+      .eq("trip_id", tripId)
+      .order("sort_order", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lastPhotoError) {
+      throw new Error(lastPhotoError.message);
+    }
+
+    let nextSortOrder = ((lastPhoto?.sort_order as number | null | undefined) ?? -1) + 1;
     const createdPhotos = [];
 
     for (const file of files) {
@@ -68,7 +81,7 @@ export async function POST(request: Request, { params }: Props) {
             width: processed.width,
             height: processed.height,
             blur_data_url: processed.blurDataUrl,
-            sort_order: Date.now()
+            sort_order: nextSortOrder
           })
           .select("*")
           .single();
@@ -78,6 +91,7 @@ export async function POST(request: Request, { params }: Props) {
         }
 
         createdPhotos.push(data);
+        nextSortOrder += 1;
       } catch (error) {
         await cleanupR2Objects(uploadedKeys);
         throw error;
