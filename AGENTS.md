@@ -1,93 +1,33 @@
-# AGENTS.md
+# Repository Guidelines
 
-Project instructions for Codex and other coding agents working in this repo.
+## Project Structure & Module Organization
 
-## Project Overview
+This is a private Next.js 15 App Router project for a public travel photo gallery and admin upload workflow. Application routes and server actions live in `src/app`. Shared UI belongs in `src/components`, and reusable helpers for auth, validation, Supabase, R2, redirects, slugs, and API behavior belong in `src/lib`. Supabase schema changes live in `supabase/migrations`; add new migration files instead of editing applied ones. Tests are colocated near the code they cover, such as `src/lib/validation.test.ts` and `src/components/lightbox.test.tsx`.
 
-This is `travel-photo-journal`, a private Next.js app for a public travel photo gallery and an admin upload workflow.
+## Build, Test, and Development Commands
 
-Core stack:
+Use Yarn for all project commands.
 
-- Next.js 15 App Router with React 19 and TypeScript
-- Supabase for auth and database access
-- Cloudflare R2 for object storage and public image delivery
-- Sharp for server-side image processing
-- Tailwind CSS for styling
-- Vitest and Testing Library for tests
+- `yarn install`: install dependencies from `yarn.lock`.
+- `yarn dev`: start the local Next.js development server.
+- `yarn lint`: run ESLint across the repository.
+- `yarn test`: run the Vitest suite once.
+- `yarn test:watch`: run Vitest in watch mode.
+- `yarn test:coverage`: run tests with V8 coverage.
+- `yarn build`: create a production Next.js build.
 
-## Common Commands
+## Coding Style & Naming Conventions
 
-Use Yarn for this project.
+Use TypeScript, React 19, and Tailwind CSS. Follow the existing module style: small focused files, pure helpers in `src/lib`, and component names in PascalCase. Use kebab-case or descriptive lowercase filenames where the repository already does so, for example `lightbox.test.tsx` and `next.config.ts`. Keep server-only logic, service-role Supabase access, Sharp processing, and R2 credentials out of client components. Prefer existing helpers in `src/lib/supabase`, R2 utilities, and validation modules over parallel implementations.
 
-```bash
-yarn install
-yarn dev
-yarn lint
-yarn test
-yarn test:coverage
-yarn build
-```
+## Testing Guidelines
 
-## Environment
+Vitest and Testing Library are the primary test tools, configured through `vitest.config.ts` and `vitest.setup.ts`. Name tests with `.test.ts` or `.test.tsx` and place them beside the affected module. Add focused unit tests for validation, config, storage, and auth helpers. Add component tests for interactive UI behavior. For substantial changes, run `yarn lint`, `yarn test`, and `yarn build` before handoff.
 
-Copy `.env.example` to `.env.local` for local development.
+## Commit & Pull Request Guidelines
 
-Required variables:
+Recent commits use conventional commit style, especially `fix: ...` messages such as `fix: avoid client env reads for admin photos`. Keep commits scoped to one logical change. Pull requests should include a concise description, testing performed, linked issues when applicable, and screenshots for visible gallery or admin UI changes.
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ADMIN_EMAILS`
-- `R2_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET_NAME`
-- `R2_PUBLIC_URL`
+## Security & Configuration Tips
 
-Keep `SUPABASE_SERVICE_ROLE_KEY` and all R2 credentials server-side only. Do not expose secrets through `NEXT_PUBLIC_` variables, client components, logs, test snapshots, or error messages.
-
-## Code Guidelines
-
-- Follow existing file organization under `src/app`, `src/components`, and `src/lib`.
-- Prefer small, focused modules and pure helpers in `src/lib`.
-- Validate external input at server boundaries with the existing validation patterns.
-- Preserve immutable data updates. Avoid mutating arrays or objects in place.
-- Keep UI consistent with the existing quiet gallery/admin interface.
-- Use existing Supabase helpers in `src/lib/supabase` rather than creating parallel clients.
-- Use existing R2 and image helpers for upload, key generation, and image variants.
-
-## Testing Expectations
-
-For behavior changes, add or update focused tests near the affected code.
-
-- Utility and validation logic: Vitest unit tests in `src/lib/*.test.ts`
-- Components: Testing Library tests in `src/components/*.test.tsx`
-- Critical auth, upload, or admin flows: add integration or E2E coverage when practical
-
-Before handing off substantial changes, run:
-
-```bash
-yarn lint
-yarn test
-yarn build
-```
-
-If a command cannot run because dependencies or environment variables are missing, report that clearly.
-
-## Security Notes
-
-- Treat admin routes, uploads, image processing, and storage keys as security-sensitive.
-- Never trust client-provided file names, MIME types, slugs, or IDs without validation.
-- Do not leak service-role, R2, or session details in client-rendered errors.
-- Keep Supabase service-role usage restricted to server-only code.
-- For storage paths, use the existing R2 key helpers to avoid path traversal or inconsistent object naming.
-
-## Database
-
-Supabase migrations live in `supabase/migrations`. Add new schema changes as migrations rather than modifying applied migrations unless the user explicitly requests a rewrite.
-
-## Git Hygiene
-
-- Do not revert unrelated user changes.
-- Keep diffs scoped to the requested task.
-- Use conventional commit messages when asked to commit.
+Copy `.env.example` to `.env.local` for development. Required secrets include Supabase service-role and Cloudflare R2 credentials; never expose them through `NEXT_PUBLIC_` variables, client-rendered errors, logs, or snapshots. Validate client-provided file names, MIME types, slugs, IDs, and upload input at server boundaries.
