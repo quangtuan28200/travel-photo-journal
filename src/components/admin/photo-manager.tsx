@@ -4,10 +4,13 @@ import { Loader2, Star, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { photoUrl } from "@/components/photo-url";
 import type { Photo, Trip } from "@/lib/types";
 
-export function PhotoManager({ trip, photos }: { trip: Trip; photos: Photo[] }) {
+function buildPhotoUrl(r2PublicUrl: string, key: string) {
+  return `${r2PublicUrl}/${key}`;
+}
+
+export function PhotoManager({ trip, photos, r2PublicUrl }: { trip: Trip; photos: Photo[]; r2PublicUrl: string }) {
   const router = useRouter();
   const [files, setFiles] = useState<FileList | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -92,7 +95,7 @@ export function PhotoManager({ trip, photos }: { trip: Trip; photos: Photo[] }) 
           <article key={photo.id} className="overflow-hidden rounded-lg bg-white/70 shadow-sm ring-1 ring-ink/5">
             <div className="relative aspect-[4/3] bg-ink/10">
               <Image
-                src={photoUrl(photo.r2_thumb_key)}
+                src={buildPhotoUrl(r2PublicUrl, photo.r2_thumb_key)}
                 alt={photo.caption ?? trip.title}
                 fill
                 sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"

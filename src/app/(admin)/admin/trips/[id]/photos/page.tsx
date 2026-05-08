@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PhotoManager } from "@/components/admin/photo-manager";
+import { getPublicConfig } from "@/lib/config";
 import { getAdminTrip } from "@/lib/trips";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,7 @@ type Props = {
 export default async function PhotosPage({ params }: Props) {
   const { id } = await params;
   const trip = await getAdminTrip(id);
+  const { r2PublicUrl } = getPublicConfig();
 
   if (!trip) {
     notFound();
@@ -28,7 +30,7 @@ export default async function PhotosPage({ params }: Props) {
         <h1 className="text-3xl font-semibold">Ảnh trong {trip.title}</h1>
         <p className="mt-2 text-sm text-ink/62">Upload, đặt caption, chọn cover và xoá ảnh.</p>
       </div>
-      <PhotoManager trip={trip} photos={trip.photos} />
+      <PhotoManager trip={trip} photos={trip.photos} r2PublicUrl={r2PublicUrl} />
     </section>
   );
 }
