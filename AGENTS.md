@@ -20,6 +20,17 @@ Use Yarn for all project commands.
 
 Use TypeScript, React 19, and Tailwind CSS. Follow the existing module style: small focused files, pure helpers in `src/lib`, and component names in PascalCase. Use kebab-case or descriptive lowercase filenames where the repository already does so, for example `lightbox.test.tsx` and `next.config.ts`. Keep server-only logic, service-role Supabase access, Sharp processing, and R2 credentials out of client components. Prefer existing helpers in `src/lib/supabase`, R2 utilities, and validation modules over parallel implementations.
 
+## AI Coding Agent Guidelines
+
+Follow these Karpathy-inspired rules when using AI coding agents in this repository:
+
+- Think before coding: state assumptions for non-trivial tasks, surface ambiguity early, and ask for clarification when guessing would be risky.
+- Simplicity first: implement the smallest clear solution that satisfies the request. Do not add speculative features, abstractions, or configurability.
+- Surgical changes: touch only files and lines needed for the task. Do not refactor, reformat, rename, or delete unrelated code.
+- Goal-driven execution: define the expected outcome and verify it with focused checks such as `yarn lint`, `yarn test`, and `yarn build` when relevant.
+- Match the codebase: prefer existing helpers, conventions, and file organization over introducing parallel patterns.
+- Preserve user work: do not revert or overwrite unrelated local changes unless explicitly asked.
+
 ## Testing Guidelines
 
 Vitest and Testing Library are the primary test tools, configured through `vitest.config.ts` and `vitest.setup.ts`. Name tests with `.test.ts` or `.test.tsx` and place them beside the affected module. Add focused unit tests for validation, config, storage, and auth helpers. Add component tests for interactive UI behavior. For substantial changes, run `yarn lint`, `yarn test`, and `yarn build` before handoff.
