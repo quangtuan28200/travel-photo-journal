@@ -3,6 +3,8 @@
 import { Loader2, Save, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { NoticeMessage, type Notice } from "@/components/notice";
+import { getClientErrorMessage, requestJson } from "@/lib/client-api";
 import { slugify } from "@/lib/slug";
 import type { Trip } from "@/lib/types";
 
@@ -19,7 +21,7 @@ export function TripForm({ trip }: TripFormProps) {
   const [endedAt, setEndedAt] = useState(trip?.ended_at ?? "");
   const [description, setDescription] = useState(trip?.description ?? "");
   const [isPublished, setIsPublished] = useState(trip?.is_published ?? false);
-  const [status, setStatus] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   function syncTitle(value: string) {
@@ -33,34 +35,36 @@ export function TripForm({ trip }: TripFormProps) {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setStatus(null);
+    setNotice(null);
 
-    const response = await fetch(trip ? `/api/admin/trips/${trip.id}` : "/api/admin/trips", {
-      method: trip ? "PATCH" : "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        title,
-        slug,
-        location,
-        started_at: startedAt,
-        ended_at: endedAt,
-        description,
-        is_published: isPublished
-      })
-    });
-    const payload = await response.json();
+    try {
+      const payload = await requestJson<{ trip: Trip }>(
+        trip ? `/api/admin/trips/${trip.id}` : "/api/admin/trips",
+        {
+          method: trip ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            title,
+            slug,
+            location,
+            started_at: startedAt,
+            ended_at: endedAt,
+            description,
+            is_published: isPublished
+          })
+        },
+        "Không thể lưu album."
+      );
 
-    setIsSubmitting(false);
-
-    if (!response.ok) {
-      setStatus(payload.error ?? "Không thể lưu album.");
-      return;
+      router.push(`/admin/trips/${payload.trip.id}`);
+      router.refresh();
+    } catch (error) {
+      setNotice({ tone: "error", message: getClientErrorMessage(error, "Không thể lưu album.") });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push(`/admin/trips/${payload.trip.id}`);
-    router.refresh();
   }
 
   async function deleteTrip() {
@@ -69,19 +73,24 @@ export function TripForm({ trip }: TripFormProps) {
     }
 
     setIsSubmitting(true);
-    const response = await fetch(`/api/admin/trips/${trip.id}`, {
-      method: "DELETE"
-    });
-    setIsSubmitting(false);
+    setNotice(null);
 
-    if (!response.ok) {
-      const payload = await response.json();
-      setStatus(payload.error ?? "Không thể xoá album.");
-      return;
+    try {
+      await requestJson<{ ok: true }>(
+        `/api/admin/trips/${trip.id}`,
+        {
+          method: "DELETE"
+        },
+        "Không thể xoá album."
+      );
+
+      router.push("/admin");
+      router.refresh();
+    } catch (error) {
+      setNotice({ tone: "error", message: getClientErrorMessage(error, "Không thể xoá album.") });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.push("/admin");
-    router.refresh();
   }
 
   return (
@@ -118,7 +127,7 @@ export function TripForm({ trip }: TripFormProps) {
         <input className="size-4 accent-ink" type="checkbox" checked={isPublished} onChange={(event) => setIsPublished(event.target.checked)} />
         Xuất bản album
       </label>
-      {status ? <p className="rounded-md bg-clay/10 px-3 py-2 text-sm text-clay">{status}</p> : null}
+      <NoticeMessage notice={notice} />
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-md bg-ink px-4 py-3 text-sm font-semibold text-paper transition hover:bg-ink/90 disabled:opacity-60">
           {isSubmitting ? <Loader2 className="animate-spin" size={18} aria-hidden /> : <Save size={18} aria-hidden />}

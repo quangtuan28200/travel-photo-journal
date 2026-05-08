@@ -4,6 +4,8 @@ import { Loader2, Star, Trash2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { NoticeMessage, type Notice } from "@/components/notice";
+import { getClientErrorMessage, requestJson } from "@/lib/client-api";
 import type { Photo, Trip } from "@/lib/types";
 
 function buildPhotoUrl(r2PublicUrl: string, key: string) {
@@ -13,49 +15,61 @@ function buildPhotoUrl(r2PublicUrl: string, key: string) {
 export function PhotoManager({ trip, photos, r2PublicUrl }: { trip: Trip; photos: Photo[]; r2PublicUrl: string }) {
   const router = useRouter();
   const [files, setFiles] = useState<FileList | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   async function upload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!files?.length) {
-      setStatus("Chọn ít nhất một ảnh.");
+      setNotice({ tone: "error", message: "Chọn ít nhất một ảnh." });
       return;
     }
 
     const formData = new FormData();
     Array.from(files).forEach((file) => formData.append("files", file));
     setIsUploading(true);
-    setStatus(null);
+    setNotice(null);
 
-    const response = await fetch(`/api/admin/trips/${trip.id}/photos`, {
-      method: "POST",
-      body: formData
-    });
-    const payload = await response.json();
+    try {
+      const payload = await requestJson<{ photos: Photo[] }>(
+        `/api/admin/trips/${trip.id}/photos`,
+        {
+          method: "POST",
+          body: formData
+        },
+        "Không thể upload ảnh."
+      );
 
-    setIsUploading(false);
-    setStatus(response.ok ? `Đã upload ${payload.photos.length} ảnh.` : payload.error ?? "Không thể upload ảnh.");
-    router.refresh();
+      setNotice({ tone: "success", message: `Đã upload ${payload.photos.length} ảnh.` });
+      router.refresh();
+    } catch (error) {
+      setNotice({ tone: "error", message: getClientErrorMessage(error, "Không thể upload ảnh.") });
+    } finally {
+      setIsUploading(false);
+    }
   }
 
   async function patchPhoto(photoId: string, input: { caption?: string; sort_order?: number; set_as_cover?: boolean }) {
-    const response = await fetch(`/api/admin/photos/${photoId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(input)
-    });
+    setNotice(null);
 
-    if (!response.ok) {
-      const payload = await response.json();
-      setStatus(payload.error ?? "Không thể cập nhật ảnh.");
-      return;
+    try {
+      await requestJson<{ photo: Photo }>(
+        `/api/admin/photos/${photoId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(input)
+        },
+        "Không thể cập nhật ảnh."
+      );
+
+      router.refresh();
+    } catch (error) {
+      setNotice({ tone: "error", message: getClientErrorMessage(error, "Không thể cập nhật ảnh.") });
     }
-
-    router.refresh();
   }
 
   async function deletePhoto(photoId: string) {
@@ -63,17 +77,21 @@ export function PhotoManager({ trip, photos, r2PublicUrl }: { trip: Trip; photos
       return;
     }
 
-    const response = await fetch(`/api/admin/photos/${photoId}`, {
-      method: "DELETE"
-    });
+    setNotice(null);
 
-    if (!response.ok) {
-      const payload = await response.json();
-      setStatus(payload.error ?? "Không thể xoá ảnh.");
-      return;
+    try {
+      await requestJson<{ ok: true }>(
+        `/api/admin/photos/${photoId}`,
+        {
+          method: "DELETE"
+        },
+        "Không thể xoá ảnh."
+      );
+
+      router.refresh();
+    } catch (error) {
+      setNotice({ tone: "error", message: getClientErrorMessage(error, "Không thể xoá ảnh.") });
     }
-
-    router.refresh();
   }
 
   return (
@@ -87,7 +105,7 @@ export function PhotoManager({ trip, photos, r2PublicUrl }: { trip: Trip; photos
           {isUploading ? <Loader2 className="animate-spin" size={18} aria-hidden /> : <Upload size={18} aria-hidden />}
           Upload
         </button>
-        {status ? <p className="mt-3 text-sm text-ink/65">{status}</p> : null}
+        <NoticeMessage notice={notice} className="mt-3" />
       </form>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

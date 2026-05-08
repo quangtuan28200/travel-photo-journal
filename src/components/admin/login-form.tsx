@@ -2,29 +2,40 @@
 
 import { Loader2, Mail } from "lucide-react";
 import { useState } from "react";
+import { NoticeMessage, type Notice } from "@/components/notice";
+import { getClientErrorMessage } from "@/lib/client-api";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setStatus(null);
+    setNotice(null);
 
-    const supabase = createSupabaseBrowserClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/admin`;
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectTo
-      }
-    });
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const redirectTo = `${window.location.origin}/auth/callback?next=/admin`;
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectTo
+        }
+      });
 
-    setIsSubmitting(false);
-    setStatus(error ? error.message : "Đã gửi magic link. Kiểm tra email để đăng nhập.");
+      setNotice(
+        error
+          ? { tone: "error", message: error.message }
+          : { tone: "success", message: "Đã gửi magic link. Kiểm tra email để đăng nhập." }
+      );
+    } catch (error) {
+      setNotice({ tone: "error", message: getClientErrorMessage(error, "Không thể gửi magic link.") });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -48,7 +59,7 @@ export function LoginForm() {
         {isSubmitting ? <Loader2 className="animate-spin" size={18} aria-hidden /> : <Mail size={18} aria-hidden />}
         Gửi magic link
       </button>
-      {status ? <p className="text-sm leading-6 text-ink/65">{status}</p> : null}
+      <NoticeMessage notice={notice} />
     </form>
   );
 }

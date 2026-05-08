@@ -12,9 +12,13 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: [
+        "src/app/error.tsx",
+        "src/components/admin/login-form.tsx",
+        "src/components/notice.tsx",
         "src/components/lightbox.tsx",
         "src/lib/api.ts",
         "src/lib/auth.ts",
+        "src/lib/client-api.ts",
         "src/lib/config.ts",
         "src/lib/errors.ts",
         "src/lib/redirect.ts",
