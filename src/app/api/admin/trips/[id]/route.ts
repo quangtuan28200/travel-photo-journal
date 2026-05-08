@@ -1,6 +1,6 @@
 import { apiError } from "@/lib/api";
 import { requireAdminForApi } from "@/lib/admin";
-import { deleteR2Object } from "@/lib/r2";
+import { cleanupR2Objects } from "@/lib/r2";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { normalizeNullable, tripInputSchema } from "@/lib/validation";
 import type { Photo } from "@/lib/types";
@@ -62,21 +62,21 @@ export async function DELETE(_request: Request, { params }: Props) {
       throw new Error(photoError.message);
     }
 
-    for (const photo of (photos ?? []) as Photo[]) {
-      await Promise.all([
-        deleteR2Object(photo.r2_original_key),
-        deleteR2Object(photo.r2_large_key),
-        deleteR2Object(photo.r2_thumb_key)
-      ]);
-    }
-
     const { error } = await supabase.from("trips").delete().eq("id", id);
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return Response.json({ ok: true });
+    const cleanupFailures = await cleanupR2Objects(
+      ((photos ?? []) as Photo[]).flatMap((photo) => [
+        photo.r2_original_key,
+        photo.r2_large_key,
+        photo.r2_thumb_key
+      ])
+    );
+
+    return Response.json({ ok: true, cleanupFailures });
   } catch (error) {
     return apiError(error, "Could not delete trip");
   }

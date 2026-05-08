@@ -83,7 +83,9 @@ export default async function TripPage({ params }: Props) {
             id: photo.id,
             src: photoUrl(photo.r2_large_key),
             alt: photo.caption ?? trip.title,
-            caption: photo.caption
+            caption: photo.caption,
+            width: photo.width,
+            height: photo.height
           }))}
         />
       ) : (

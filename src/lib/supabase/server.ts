@@ -31,3 +31,14 @@ export function createSupabaseAdminClient() {
     }
   });
 }
+
+export function createSupabasePublicClient() {
+  const config = getPublicConfig();
+
+  return createClient(config.supabaseUrl, config.supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}

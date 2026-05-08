@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, Images, MapPin } from "lucide-react";
+import Image from "next/image";
 import { photoUrl } from "@/components/photo-url";
 import type { TripWithCover } from "@/lib/types";
 
@@ -27,13 +28,14 @@ export function TripCard({ trip }: { trip: TripWithCover }) {
       className="group overflow-hidden rounded-lg bg-white/70 shadow-soft ring-1 ring-ink/5 transition duration-300 hover:-translate-y-1 hover:bg-white"
       data-testid="trip-card"
     >
-      <div className="aspect-[4/3] overflow-hidden bg-ink/10">
+      <div className="relative aspect-[4/3] overflow-hidden bg-ink/10">
         {cover ? (
-          <img
+          <Image
             src={photoUrl(cover.r2_large_key)}
             alt={cover.caption ?? trip.title}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            loading="lazy"
           />
         ) : (
           <div className="grid h-full place-items-center bg-moss/15 text-sm text-ink/55">Chưa có ảnh</div>

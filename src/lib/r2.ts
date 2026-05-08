@@ -52,3 +52,14 @@ export async function deleteR2Object(key: string) {
     })
   );
 }
+
+export async function cleanupR2Objects(keys: string[]) {
+  const results = await Promise.allSettled(keys.map((key) => deleteR2Object(key)));
+  const failures = results.filter((result) => result.status === "rejected");
+
+  if (failures.length) {
+    console.error("Failed to clean up R2 objects", failures);
+  }
+
+  return failures.length;
+}

@@ -26,6 +26,26 @@ describe("tripInputSchema", () => {
       })
     ).toThrow();
   });
+
+  it("rejects invalid date strings", () => {
+    expect(() =>
+      tripInputSchema.parse({
+        title: "Japan",
+        slug: "japan-2026",
+        started_at: "not-a-date",
+        ended_at: "2026-03-01"
+      })
+    ).toThrow("Use YYYY-MM-DD dates");
+
+    expect(() =>
+      tripInputSchema.parse({
+        title: "Japan",
+        slug: "japan-2026",
+        started_at: "2026-02-30",
+        ended_at: ""
+      })
+    ).toThrow("Use YYYY-MM-DD dates");
+  });
 });
 
 describe("upload validation", () => {

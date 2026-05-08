@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Star, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { photoUrl } from "@/components/photo-url";
@@ -89,8 +90,14 @@ export function PhotoManager({ trip, photos }: { trip: Trip; photos: Photo[] }) 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {photos.map((photo) => (
           <article key={photo.id} className="overflow-hidden rounded-lg bg-white/70 shadow-sm ring-1 ring-ink/5">
-            <div className="aspect-[4/3] bg-ink/10">
-              <img src={photoUrl(photo.r2_thumb_key)} alt={photo.caption ?? trip.title} className="h-full w-full object-cover" loading="lazy" />
+            <div className="relative aspect-[4/3] bg-ink/10">
+              <Image
+                src={photoUrl(photo.r2_thumb_key)}
+                alt={photo.caption ?? trip.title}
+                fill
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div className="space-y-3 p-4">
               <label className="grid gap-2 text-xs font-medium uppercase tracking-[0.14em] text-ink/45">

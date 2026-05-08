@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Edit3, Eye, Images } from "lucide-react";
+import Image from "next/image";
 import { EmptyState } from "@/components/empty-state";
 import { photoUrl } from "@/components/photo-url";
 import { getAdminTrips } from "@/lib/trips";
@@ -19,9 +20,15 @@ export default async function AdminPage() {
         <div className="grid gap-4">
           {trips.map((trip) => (
             <article key={trip.id} className="grid gap-4 rounded-lg bg-white/70 p-4 shadow-sm ring-1 ring-ink/5 sm:grid-cols-[180px_1fr_auto] sm:items-center">
-              <div className="aspect-[4/3] overflow-hidden rounded-md bg-ink/10">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-ink/10">
                 {trip.cover_photo ? (
-                  <img src={photoUrl(trip.cover_photo.r2_thumb_key)} alt={trip.title} className="h-full w-full object-cover" loading="lazy" />
+                  <Image
+                    src={photoUrl(trip.cover_photo.r2_thumb_key)}
+                    alt={trip.title}
+                    fill
+                    sizes="180px"
+                    className="h-full w-full object-cover"
+                  />
                 ) : null}
               </div>
               <div>

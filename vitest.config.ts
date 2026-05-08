@@ -13,8 +13,11 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: [
         "src/components/lightbox.tsx",
+        "src/lib/api.ts",
         "src/lib/auth.ts",
         "src/lib/config.ts",
+        "src/lib/errors.ts",
+        "src/lib/redirect.ts",
         "src/lib/r2-key.ts",
         "src/lib/slug.ts",
         "src/lib/validation.ts"

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export type LightboxPhoto = {
@@ -8,6 +9,8 @@ export type LightboxPhoto = {
   src: string;
   alt: string;
   caption: string | null;
+  width?: number | null;
+  height?: number | null;
 };
 
 export function Lightbox({ photos }: { photos: LightboxPhoto[] }) {
@@ -48,7 +51,14 @@ export function Lightbox({ photos }: { photos: LightboxPhoto[] }) {
             className="masonry-item w-full overflow-hidden rounded-lg bg-white/70 text-left shadow-sm ring-1 ring-ink/5 transition hover:-translate-y-0.5 hover:bg-white"
             onClick={() => setActiveIndex(index)}
           >
-            <img src={photo.src} alt={photo.alt} className="w-full object-cover" loading="lazy" />
+            <Image
+              src={photo.src}
+              alt={photo.alt}
+              width={photo.width ?? 1200}
+              height={photo.height ?? 800}
+              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+              className="h-auto w-full object-cover"
+            />
             {photo.caption ? <span className="block px-4 py-3 text-sm text-ink/65">{photo.caption}</span> : null}
           </button>
         ))}
@@ -73,7 +83,15 @@ export function Lightbox({ photos }: { photos: LightboxPhoto[] }) {
             <ChevronLeft size={26} aria-hidden />
           </button>
           <figure className="max-h-[88vh] max-w-6xl">
-            <img src={activePhoto.src} alt={activePhoto.alt} className="max-h-[78vh] w-auto rounded-lg object-contain" />
+            <Image
+              src={activePhoto.src}
+              alt={activePhoto.alt}
+              width={activePhoto.width ?? 2000}
+              height={activePhoto.height ?? 1333}
+              sizes="100vw"
+              className="max-h-[78vh] w-auto rounded-lg object-contain"
+              priority
+            />
             {activePhoto.caption ? <figcaption className="mt-4 text-center text-sm text-white/75">{activePhoto.caption}</figcaption> : null}
           </figure>
           <button

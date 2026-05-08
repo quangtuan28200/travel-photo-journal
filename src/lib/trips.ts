@@ -1,4 +1,4 @@
-import { createSupabaseAdminClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient, createSupabasePublicClient } from "@/lib/supabase/server";
 import { isMissingConfigError } from "@/lib/config";
 import type { Photo, Trip, TripWithCover, TripWithPhotos } from "@/lib/types";
 
@@ -6,7 +6,7 @@ export async function getPublishedTrips(): Promise<TripWithCover[]> {
   let supabase;
 
   try {
-    supabase = createSupabaseAdminClient();
+    supabase = createSupabasePublicClient();
   } catch (error) {
     if (isMissingConfigError(error)) {
       return [];
@@ -58,7 +58,7 @@ export async function getPublishedTripBySlug(slug: string): Promise<TripWithPhot
   let supabase;
 
   try {
-    supabase = createSupabaseAdminClient();
+    supabase = createSupabasePublicClient();
   } catch (error) {
     if (isMissingConfigError(error)) {
       return null;

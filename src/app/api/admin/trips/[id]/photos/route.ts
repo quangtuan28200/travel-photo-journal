@@ -1,7 +1,8 @@
 import { apiError } from "@/lib/api";
+import { PublicApiError } from "@/lib/errors";
 import { requireAdminForApi } from "@/lib/admin";
 import { processImage } from "@/lib/images";
-import { buildPhotoKey, createPhotoId, uploadR2Object } from "@/lib/r2";
+import { buildPhotoKey, cleanupR2Objects, createPhotoId, uploadR2Object } from "@/lib/r2";
 import { createSupabaseAdminClient } from "@/lib/supabase/server";
 import { validateUploadFile } from "@/lib/validation";
 
@@ -24,13 +25,21 @@ export async function POST(request: Request, { params }: Props) {
     const files = formData.getAll("files").filter((value): value is File => value instanceof File);
 
     if (!files.length) {
-      return Response.json({ error: "No images selected" }, { status: 400 });
+      throw new PublicApiError("No images selected");
     }
 
     const supabase = createSupabaseAdminClient();
+    const { data: trip, error: tripError } = await supabase.from("trips").select("id").eq("id", tripId).single();
+
+    if (tripError || !trip) {
+      throw new PublicApiError("Trip not found");
+    }
+
     const createdPhotos = [];
 
     for (const file of files) {
+      const uploadedKeys: string[] = [];
+
       validateUploadFile(file);
 
       const photoId = createPhotoId();
@@ -40,33 +49,39 @@ export async function POST(request: Request, { params }: Props) {
       const largeKey = buildPhotoKey(tripId, photoId, "large");
       const thumbKey = buildPhotoKey(tripId, photoId, "thumb");
 
-      await Promise.all([
-        uploadR2Object(originalKey, processed.original, "image/webp"),
-        uploadR2Object(largeKey, processed.large, "image/webp"),
-        uploadR2Object(thumbKey, processed.thumb, "image/webp")
-      ]);
+      try {
+        await uploadR2Object(originalKey, processed.original, "image/webp");
+        uploadedKeys.push(originalKey);
+        await uploadR2Object(largeKey, processed.large, "image/webp");
+        uploadedKeys.push(largeKey);
+        await uploadR2Object(thumbKey, processed.thumb, "image/webp");
+        uploadedKeys.push(thumbKey);
 
-      const { data, error } = await supabase
-        .from("photos")
-        .insert({
-          id: photoId,
-          trip_id: tripId,
-          r2_original_key: originalKey,
-          r2_large_key: largeKey,
-          r2_thumb_key: thumbKey,
-          width: processed.width,
-          height: processed.height,
-          blur_data_url: processed.blurDataUrl,
-          sort_order: Date.now()
-        })
-        .select("*")
-        .single();
+        const { data, error } = await supabase
+          .from("photos")
+          .insert({
+            id: photoId,
+            trip_id: tripId,
+            r2_original_key: originalKey,
+            r2_large_key: largeKey,
+            r2_thumb_key: thumbKey,
+            width: processed.width,
+            height: processed.height,
+            blur_data_url: processed.blurDataUrl,
+            sort_order: Date.now()
+          })
+          .select("*")
+          .single();
 
-      if (error) {
-        throw new Error(error.message);
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        createdPhotos.push(data);
+      } catch (error) {
+        await cleanupR2Objects(uploadedKeys);
+        throw error;
       }
-
-      createdPhotos.push(data);
     }
 
     return Response.json({ photos: createdPhotos }, { status: 201 });
