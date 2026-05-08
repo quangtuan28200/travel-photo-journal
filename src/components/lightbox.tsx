@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { buttonClass, cx } from "@/components/ui";
 
 export type LightboxPhoto = {
   id: string;
@@ -48,7 +49,7 @@ export function Lightbox({ photos }: { photos: LightboxPhoto[] }) {
           <button
             key={photo.id}
             type="button"
-            className="masonry-item w-full overflow-hidden rounded-lg bg-white/70 text-left shadow-sm ring-1 ring-ink/5 transition hover:-translate-y-0.5 hover:bg-white"
+            className="masonry-item group w-full overflow-hidden rounded-lg border border-ink/10 bg-linen/80 text-left shadow-panel transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-editorial focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-tide/25"
             onClick={() => setActiveIndex(index)}
           >
             <Image
@@ -57,26 +58,21 @@ export function Lightbox({ photos }: { photos: LightboxPhoto[] }) {
               width={photo.width ?? 1200}
               height={photo.height ?? 800}
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="h-auto w-full object-cover"
+              className="h-auto w-full object-cover transition duration-500 group-hover:scale-[1.025]"
             />
-            {photo.caption ? <span className="block px-4 py-3 text-sm text-ink/65">{photo.caption}</span> : null}
+            {photo.caption ? <span className="block px-4 py-3 text-sm leading-6 text-ink/65">{photo.caption}</span> : null}
           </button>
         ))}
       </div>
 
       {activePhoto && activeIndex !== null ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/92 p-4" role="dialog" aria-modal="true">
-          <button
-            type="button"
-            className="absolute right-4 top-4 grid size-11 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
-            onClick={() => setActiveIndex(null)}
-            aria-label="Đóng"
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/94 p-4" role="dialog" aria-modal="true">
+          <button type="button" className={cx(buttonClass("secondary", "absolute right-4 top-4 size-11 rounded-full px-0 bg-white/10 text-white hover:bg-white/20"), "border-white/15")} onClick={() => setActiveIndex(null)} aria-label="Đóng">
             <X size={22} aria-hidden />
           </button>
           <button
             type="button"
-            className="absolute left-4 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            className={cx(buttonClass("secondary", "absolute left-4 top-1/2 size-11 -translate-y-1/2 rounded-full px-0 bg-white/10 text-white hover:bg-white/20"), "border-white/15")}
             onClick={() => setActiveIndex((activeIndex - 1 + photos.length) % photos.length)}
             aria-label="Ảnh trước"
           >
@@ -89,14 +85,14 @@ export function Lightbox({ photos }: { photos: LightboxPhoto[] }) {
               width={activePhoto.width ?? 2000}
               height={activePhoto.height ?? 1333}
               sizes="100vw"
-              className="max-h-[78vh] w-auto rounded-lg object-contain"
+              className="max-h-[78vh] w-auto rounded-lg object-contain shadow-editorial"
               priority
             />
-            {activePhoto.caption ? <figcaption className="mt-4 text-center text-sm text-white/75">{activePhoto.caption}</figcaption> : null}
+            {activePhoto.caption ? <figcaption className="mt-4 text-center text-sm leading-6 text-white/80">{activePhoto.caption}</figcaption> : null}
           </figure>
           <button
             type="button"
-            className="absolute right-4 top-1/2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            className={cx(buttonClass("secondary", "absolute right-4 top-1/2 size-11 -translate-y-1/2 rounded-full px-0 bg-white/10 text-white hover:bg-white/20"), "border-white/15")}
             onClick={() => setActiveIndex((activeIndex + 1) % photos.length)}
             aria-label="Ảnh sau"
           >

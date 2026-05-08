@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { buttonClass } from "@/components/ui";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function LogoutButton({ children }: { children: React.ReactNode }) {
@@ -14,12 +15,7 @@ export function LogoutButton({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={logout}
-      className="inline-flex size-10 items-center justify-center rounded-md border border-ink/10 bg-white/60 text-ink shadow-sm transition hover:bg-white"
-      aria-label="Đăng xuất"
-    >
+    <button type="button" onClick={logout} className={buttonClass("secondary", "size-11 px-0")} aria-label="Đăng xuất">
       {children}
     </button>
   );

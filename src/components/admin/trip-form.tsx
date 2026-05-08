@@ -4,6 +4,7 @@ import { Loader2, Save, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { NoticeMessage, type Notice } from "@/components/notice";
+import { buttonClass, inputClass, surfaceClass, textareaClass } from "@/components/ui";
 import { getClientErrorMessage, requestJson } from "@/lib/client-api";
 import { slugify } from "@/lib/slug";
 import type { Trip } from "@/lib/types";
@@ -11,6 +12,16 @@ import type { Trip } from "@/lib/types";
 type TripFormProps = {
   trip?: Trip;
 };
+
+function Field({ label, children, helper }: { label: string; children: React.ReactNode; helper?: string }) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-ink">
+      {label}
+      {children}
+      {helper ? <span className="text-xs font-normal leading-5 text-ink/55">{helper}</span> : null}
+    </label>
+  );
+}
 
 export function TripForm({ trip }: TripFormProps) {
   const router = useRouter();
@@ -94,52 +105,60 @@ export function TripForm({ trip }: TripFormProps) {
   }
 
   return (
-    <form className="grid gap-5 rounded-lg bg-white/70 p-5 shadow-sm ring-1 ring-ink/5" onSubmit={submit}>
-      <div className="grid gap-5 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-medium">
-          Tên album
-          <input className="rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 focus:ring-4" value={title} onChange={(event) => syncTitle(event.target.value)} required />
-        </label>
-        <label className="grid gap-2 text-sm font-medium">
-          Slug
-          <input className="rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 focus:ring-4" value={slug} onChange={(event) => setSlug(slugify(event.target.value))} required />
-        </label>
-        <label className="grid gap-2 text-sm font-medium">
-          Địa điểm
-          <input className="rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 focus:ring-4" value={location} onChange={(event) => setLocation(event.target.value)} />
-        </label>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm font-medium">
-            Ngày bắt đầu
-            <input className="rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 focus:ring-4" type="date" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} />
-          </label>
-          <label className="grid gap-2 text-sm font-medium">
-            Ngày kết thúc
-            <input className="rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 focus:ring-4" type="date" value={endedAt} onChange={(event) => setEndedAt(event.target.value)} />
-          </label>
+    <form className={surfaceClass("grid gap-6 p-5 sm:p-6")} onSubmit={submit}>
+      <section className="grid gap-5">
+        <div>
+          <h2 className="font-display text-2xl font-semibold text-ink">Thông tin album</h2>
+          <p className="mt-1 text-sm leading-6 text-ink/60">Tên, đường dẫn và phần mô tả sẽ xuất hiện ở trang public.</p>
         </div>
-      </div>
-      <label className="grid gap-2 text-sm font-medium">
-        Mô tả
-        <textarea className="min-h-36 rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 focus:ring-4" value={description} onChange={(event) => setDescription(event.target.value)} />
-      </label>
-      <label className="flex items-center gap-3 text-sm font-medium">
-        <input className="size-4 accent-ink" type="checkbox" checked={isPublished} onChange={(event) => setIsPublished(event.target.checked)} />
-        Xuất bản album
-      </label>
+        <div className="grid gap-5 md:grid-cols-2">
+          <Field label="Tên album">
+            <input className={inputClass} value={title} onChange={(event) => syncTitle(event.target.value)} required />
+          </Field>
+          <Field label="Slug" helper="Dùng trong URL public của album.">
+            <input className={inputClass} value={slug} onChange={(event) => setSlug(slugify(event.target.value))} required />
+          </Field>
+          <Field label="Địa điểm">
+            <input className={inputClass} value={location} onChange={(event) => setLocation(event.target.value)} />
+          </Field>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Ngày bắt đầu">
+              <input className={inputClass} type="date" value={startedAt} onChange={(event) => setStartedAt(event.target.value)} />
+            </Field>
+            <Field label="Ngày kết thúc">
+              <input className={inputClass} type="date" value={endedAt} onChange={(event) => setEndedAt(event.target.value)} />
+            </Field>
+          </div>
+        </div>
+        <Field label="Mô tả" helper="Giữ ngắn gọn, thiên về câu chuyện và cảm xúc của chuyến đi.">
+          <textarea className={`${textareaClass} min-h-36`} value={description} onChange={(event) => setDescription(event.target.value)} />
+        </Field>
+      </section>
+
+      <section className="rounded-lg border border-ink/10 bg-linen/70 p-4">
+        <label className="flex items-start gap-3 text-sm font-semibold text-ink">
+          <input className="mt-1 size-4 accent-ink" type="checkbox" checked={isPublished} onChange={(event) => setIsPublished(event.target.checked)} />
+          <span>
+            Xuất bản album
+            <span className="mt-1 block text-xs font-normal leading-5 text-ink/58">Khi bật, album có thể xuất hiện ở trang chủ và đường dẫn public.</span>
+          </span>
+        </label>
+      </section>
+
       <NoticeMessage notice={notice} />
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-md bg-ink px-4 py-3 text-sm font-semibold text-paper transition hover:bg-ink/90 disabled:opacity-60">
+
+      <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-5">
+        <button type="submit" disabled={isSubmitting} className={buttonClass("primary")}>
           {isSubmitting ? <Loader2 className="animate-spin" size={18} aria-hidden /> : <Save size={18} aria-hidden />}
           Lưu album
         </button>
         {trip ? (
           <>
-            <button type="button" onClick={() => router.push(`/admin/trips/${trip.id}/photos`)} className="inline-flex items-center gap-2 rounded-md border border-ink/10 bg-white px-4 py-3 text-sm font-semibold text-ink transition hover:bg-paper">
+            <button type="button" onClick={() => router.push(`/admin/trips/${trip.id}/photos`)} className={buttonClass("secondary")}>
               <Upload size={18} aria-hidden />
               Quản lý ảnh
             </button>
-            <button type="button" onClick={deleteTrip} disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-md border border-clay/20 bg-clay/10 px-4 py-3 text-sm font-semibold text-clay transition hover:bg-clay/15 disabled:opacity-60">
+            <button type="button" onClick={deleteTrip} disabled={isSubmitting} className={buttonClass("danger", "sm:ml-auto")}>
               <Trash2 size={18} aria-hidden />
               Xoá
             </button>

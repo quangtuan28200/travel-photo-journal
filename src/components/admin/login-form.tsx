@@ -3,6 +3,7 @@
 import { Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 import { NoticeMessage, type Notice } from "@/components/notice";
+import { buttonClass, inputClass } from "@/components/ui";
 import { getClientErrorMessage } from "@/lib/client-api";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -40,22 +41,19 @@ export function LoginForm() {
 
   return (
     <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-      <label className="grid gap-2 text-sm font-medium">
+      <label className="grid gap-2 text-sm font-semibold text-ink">
         Email
         <input
-          className="rounded-md border border-ink/10 bg-white px-3 py-3 outline-none ring-tide/30 transition focus:ring-4"
+          className={inputClass}
           type="email"
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@example.com"
+          autoComplete="email"
         />
       </label>
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-3 text-sm font-semibold text-paper transition hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
-      >
+      <button type="submit" disabled={isSubmitting} className={buttonClass("primary", "w-full")}>
         {isSubmitting ? <Loader2 className="animate-spin" size={18} aria-hidden /> : <Mail size={18} aria-hidden />}
         Gửi magic link
       </button>

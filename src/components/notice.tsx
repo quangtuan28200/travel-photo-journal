@@ -1,4 +1,5 @@
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { cx } from "@/components/ui";
 
 export type Notice = {
   tone: "error" | "success";
@@ -16,13 +17,11 @@ export function NoticeMessage({ notice, className = "" }: { notice: Notice | nul
   return (
     <p
       role={isError ? "alert" : "status"}
-      className={[
-        "flex items-start gap-2 rounded-md px-3 py-2 text-sm leading-6",
-        isError ? "bg-clay/10 text-clay" : "bg-tide/10 text-ink",
+      className={cx(
+        "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm leading-6 shadow-sm",
+        isError ? "border-clay/25 bg-clay/10 text-clay" : "border-moss/20 bg-moss/10 text-moss",
         className
-      ]
-        .filter(Boolean)
-        .join(" ")}
+      )}
     >
       <Icon className="mt-0.5 shrink-0" size={16} aria-hidden />
       <span>{notice.message}</span>
